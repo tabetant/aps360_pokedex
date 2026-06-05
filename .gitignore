@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# Virtual environment
+.venv/
+
+# Data — never commit assets (IP) or large artifacts
+/data/
+
+# Model weights / checkpoints
+*.pt
+*.pth
+*.safetensors
+checkpoints/
+
+# Hugging Face / local caches
+.cache/
+
+# Secrets
+.env
+
+# macOS
+.DS_Store

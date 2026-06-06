@@ -22,12 +22,14 @@ def get(endpoint, poke_id):
         else:
             raise Exception(f"Failed to fetch data: {response.status_code}")
 
-def parse_names(species, langs=LANGS):
+def parse_names_and_gen(species, langs=LANGS):
     names = {}
+    generation = -1
     for entry in species["names"]:
         if entry["language"]["name"] in langs:
             names[entry["language"]["name"]] = entry["name"]
-    return names
+            generation = species["generation"]["name"]
+    return names, generation
 
 def parse_sprites(pokemon):
     gen1 = pokemon["sprites"]["versions"]["generation-i"]["red-blue"]["front_default"]
@@ -46,10 +48,12 @@ def parse_sprites(pokemon):
     }
 
 def parse(poke_id):
-    species = get(NAMES_ENDPOINT, poke_id)
+    species =  get(NAMES_ENDPOINT, poke_id)
+    names, generation = parse_names_and_gen(species)
     pokemon = get(SPRITES_ENDPOINT, poke_id)
     return {
         "id": poke_id,
-        "names": parse_names(species),
+        "names": names,
+        "generation": generation,
         "sprites": parse_sprites(pokemon)
     }

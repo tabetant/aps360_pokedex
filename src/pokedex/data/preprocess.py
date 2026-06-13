@@ -3,22 +3,30 @@ from PIL import Image
 import requests
 
 def download_image(poke_id, style, url):
-    file_path = f"data/cache/images/{poke_id}/{style}.{url.split('.')[-1]}"
+    ext = url.split(".")[-1]
+    dir_path = f"data/cache/images/{poke_id}"
+    file_path = f"{dir_path}/{style}.{ext}"
     if os.path.exists(file_path):
         return file_path
-    os.makedirs(f"data/cache/images/{poke_id}", exist_ok=True)
+    os.makedirs(dir_path, exist_ok=True)
+    tmp_path = f"{file_path}.tmp"
     try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            with open(file_path, "wb") as f:
-                f.write(response.content)
-                return file_path
-        else:
-            raise Exception(f"Failed to download image: {response.status_code}")
+        response = requests.get(url, timeout=30)
+        if response.status_code != 200:
+            print(f"Failed to download image for {poke_id} ({style}): HTTP {response.status_code}")
+            return None
+        with open(tmp_path, "wb") as f:
+            f.write(response.content)
+        # validate it actually decodes as an image BEFORE committing to cache
+        with Image.open(tmp_path) as im:
+            im.load()
+        os.replace(tmp_path, file_path)   # atomic: real path only appears once the file is complete + valid
+        return file_path
     except Exception as e:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
         print(f"Failed to download image for {poke_id} ({style}): {e}")
         return None
-
 def load_image(path):
     if os.path.exists(path):
         return Image.open(path).convert("RGBA")
@@ -37,12 +45,16 @@ def to_square_256(img):
     return new_img.resize((256, 256), Image.Resampling.BICUBIC)
 
 def pre_process(poke_id, style, url):
-    path = download_image(poke_id, style, url)
-    if path is None:
+    if url is None:
         return None
-    img = load_image(path)
-    if img is None:
-        return None
-    img = flatten_white(img)
-    img = to_square_256(img)
-    return img
+    for u in url:
+        path = download_image(poke_id, style, u)
+        if path is None:
+            continue
+        img = load_image(path)
+        if img is None:
+            continue
+        img = flatten_white(img)
+        img = to_square_256(img)
+        return img
+    return None

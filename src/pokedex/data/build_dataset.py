@@ -40,9 +40,9 @@ def build_dataset(start=1, end=5):
     for species_id in range(start, end + 1):
         download_path=f"data/processed/{species_id}"
         os.makedirs(download_path, exist_ok=True)
-        try:
-            data = parse(species_id)
-            for style, url in data["sprites"].items():
+        data = parse(species_id)
+        for style, url in data["sprites"].items():
+            try:
                 img = pre_process(species_id, style, url)
                 img_path = f"{download_path}/{style}.png"
                 if img:
@@ -54,9 +54,9 @@ def build_dataset(start=1, end=5):
                         "image_path": img_path,
                         "names": data["names"],
                 })
+            except Exception as e:
+                print(f"Error processing species {species_id} sprite {style}: {e}")
             print(f"Processed species {species_id}")
-        except Exception as e:
-            print(f"Error processing species {species_id}: {e}")
     split = split_species(records)
     for record in records:
         sid = record["species_id"]

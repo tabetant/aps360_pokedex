@@ -27,6 +27,7 @@ def download_image(poke_id, style, url):
             os.remove(tmp_path)
         print(f"Failed to download image for {poke_id} ({style}): {e}")
         return None
+    
 def load_image(path):
     if os.path.exists(path):
         return Image.open(path).convert("RGBA")

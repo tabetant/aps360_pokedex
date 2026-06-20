@@ -30,13 +30,13 @@ def transform_builder(train=False):
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             # TODO: REPLACE WITH SIGLIP VALUES FOR MEAN AND STD
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
         ])
     else:
         return transforms.Compose([
             transforms.Resize((256, 256)),
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
         ])
     
 def get_data_loader(manifest, split, batch_size, num_workers=4):

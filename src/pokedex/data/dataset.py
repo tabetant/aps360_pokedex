@@ -2,9 +2,9 @@ import PIL.Image
 import torch
 import torchvision.transforms as transforms
 class PokedexDataset(torch.utils.data.Dataset):
-    def __init__(self, manifest, split, transform):
+    def __init__(self, manifest, split, transform, style):
         self.styledict = {"render":0, "gen5":1, "retropixel":2, "art":3}
-        self.manifest = [x for x in manifest if x['split'] == split]
+        self.manifest = [x for x in manifest if x['style'] == style] if split =='all' else [x for x in manifest if x['split'] == split and x['style'] == style] 
         self.split = split
         self.transform = transform
 
@@ -29,7 +29,6 @@ def transform_builder(train=False):
             transforms.Resize((256, 256)),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-            # TODO: REPLACE WITH SIGLIP VALUES FOR MEAN AND STD
             transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
         ])
     else:
@@ -39,7 +38,7 @@ def transform_builder(train=False):
             transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
         ])
     
-def get_data_loader(manifest, split, batch_size, num_workers=4):
+def get_data_loader(manifest, split, style, batch_size, num_workers=4):
     transform = transform_builder(train=(split=="train"))
-    dataset = PokedexDataset(manifest, split, transform)
+    dataset = PokedexDataset(manifest, split, transform, style)
     return torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=(split=="train"), num_workers=num_workers)
